@@ -42,88 +42,25 @@ export default function Home() {
 
     try {
       // Dynamic import to reduce bundle size
-      const html2canvas = (await import("html2canvas")).default
+      const { toPng } = await import("html-to-image")
 
-      // Create a clone of the element to modify styles without affecting the original
-      const clonedElement = cardRef.current.cloneNode(true) as HTMLElement
-      document.body.appendChild(clonedElement)
-
-      // Override all computed styles that might use modern color functions
-      const overrideStyles = (element: HTMLElement) => {
-        const computedStyle = window.getComputedStyle(element)
-
-        // Force standard color formats for problematic properties
-        element.style.color =
-          computedStyle.color.includes("oklab") || computedStyle.color.includes("oklch")
-            ? "#ffffff"
-            : computedStyle.color
-        element.style.backgroundColor =
-          computedStyle.backgroundColor.includes("oklab") || computedStyle.backgroundColor.includes("oklch")
-            ? "transparent"
-            : computedStyle.backgroundColor
-        element.style.borderColor =
-          computedStyle.borderColor.includes("oklab") || computedStyle.borderColor.includes("oklch")
-            ? "#666666"
-            : computedStyle.borderColor
-
-        // Recursively apply to all children
-        Array.from(element.children).forEach((child) => {
-          if (child instanceof HTMLElement) {
-            overrideStyles(child)
-          }
-        })
-      }
-
-      overrideStyles(clonedElement)
-
-      // Ensure tags are properly rendered
-      const tagElements = clonedElement.querySelectorAll('[style*="display: flex"]')
-      tagElements.forEach((tag) => {
-        if (tag instanceof HTMLElement) {
-          // Ensure flex properties are preserved
-          tag.style.display = "flex"
-          tag.style.alignItems = "center"
-          tag.style.justifyContent = "center"
-        }
-      })
-
-      const canvas = await html2canvas(clonedElement, {
-        backgroundColor: null,
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        foreignObjectRendering: false,
-        removeContainer: true,
-        logging: false,
-        width: cardRef.current.offsetWidth,
-        height: cardRef.current.offsetHeight,
-        onclone: (clonedDoc) => {
-          // Additional safety: override any remaining problematic styles in the cloned document
-          const allElements = clonedDoc.querySelectorAll("*")
-          allElements.forEach((el) => {
-            if (el instanceof HTMLElement) {
-              const style = el.style
-              // Replace any remaining modern color functions with safe defaults
-              if (style.color && (style.color.includes("oklab") || style.color.includes("oklch"))) {
-                style.color = "#ffffff"
-              }
-              if (
-                style.backgroundColor &&
-                (style.backgroundColor.includes("oklab") || style.backgroundColor.includes("oklch"))
-              ) {
-                style.backgroundColor = "transparent"
-              }
-            }
-          })
+      const dataUrl = await toPng(cardRef.current, {
+        quality: 1.0,
+        pixelRatio: 2,
+        backgroundColor: "#0f0f0f",
+        style: {
+          transform: "scale(1)",
+          transformOrigin: "top left",
+        },
+        filter: (node) => {
+          // Filter out any elements we don't want in the image
+          return true
         },
       })
 
-      // Clean up the cloned element
-      document.body.removeChild(clonedElement)
-
       const link = document.createElement("a")
       link.download = `achievement-card-${Date.now()}.png`
-      link.href = canvas.toDataURL("image/png", 1.0)
+      link.href = dataUrl
       link.click()
     } catch (error) {
       console.error("Error generating image:", error)
