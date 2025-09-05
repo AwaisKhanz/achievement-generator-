@@ -22,7 +22,7 @@ export const AchievementCard = forwardRef<HTMLDivElement, AchievementCardProps>(
         <img
           src={data.backgroundImage || "/placeholder.svg"}
           alt="Background"
-          className="w-full h-full rounded-lg object-cover transition-transform duration-500"
+          className="w-full h-full rounded-lg object-fill transition-transform duration-500"
           crossOrigin="anonymous"
         />
       </div>
@@ -33,7 +33,7 @@ export const AchievementCard = forwardRef<HTMLDivElement, AchievementCardProps>(
           <img
             src={data.profileImage || "/placeholder.svg"}
             alt="Profile"
-            className="w-full h-full rounded-full object-cover transition-transform duration-300"
+            className="w-full h-full rounded-full object-fill transition-transform duration-300"
             crossOrigin="anonymous"
           />
         </div>
