@@ -1,15 +1,18 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { ToolLayout } from '@/components/ui/tool-layout';
 import { FileUploader } from '@/components/ui/file-uploader';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import imageCompression from 'browser-image-compression';
 import { Download, RefreshCw, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
+
+type ImageFormat = 'original' | 'image/jpeg' | 'image/png' | 'image/webp';
 
 export default function ImageResizerPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -17,6 +20,7 @@ export default function ImageResizerPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [quality, setQuality] = useState(0.8);
   const [maxWidth, setMaxWidth] = useState(1920);
+  const [targetFormat, setTargetFormat] = useState<ImageFormat>('original');
 
   // Manage object URLs to avoid memory leaks
   const [fileUrl, setFileUrl] = useState<string | null>(null);
@@ -59,16 +63,30 @@ export default function ImageResizerPage() {
     setIsProcessing(true);
     try {
       const options = {
-        maxSizeMB: 10, // Basically unlimited, we control by width/quality
+        maxSizeMB: 10,
         maxWidthOrHeight: maxWidth,
         useWebWorker: true,
         initialQuality: quality,
+        fileType: targetFormat === 'original' ? undefined : targetFormat,
       };
 
       const compressedBlob = await imageCompression(file, options);
-      // Create a new File object from the blob to keep the name and other properties
-      const processedFile = new File([compressedBlob], file.name, {
-        type: file.type,
+
+      // Determine file extension
+      let extension = file.name.split('.').pop() || '';
+      let mimeType = file.type;
+
+      if (targetFormat !== 'original') {
+          mimeType = targetFormat;
+          if (targetFormat === 'image/jpeg') extension = 'jpg';
+          else if (targetFormat === 'image/png') extension = 'png';
+          else if (targetFormat === 'image/webp') extension = 'webp';
+      }
+
+      const newName = `${file.name.substring(0, file.name.lastIndexOf('.'))}.${extension}`;
+
+      const processedFile = new File([compressedBlob], newName, {
+        type: mimeType,
         lastModified: Date.now(),
       });
 
@@ -84,15 +102,10 @@ export default function ImageResizerPage() {
 
   const downloadImage = () => {
     if (!compressedFile) return;
-    // use the existing URL if available, otherwise create one temporarily (though we maintain one in state)
-    // Actually we can just use URL.createObjectURL just for the download action if we didn't have it,
-    // but since we have `compressedFileUrl` for preview, we can reuse it?
-    // Wait, `a.href` works with the blob url.
-
     const url = compressedFileUrl || URL.createObjectURL(compressedFile);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `processed-${compressedFile.name}`;
+    link.download = compressedFile.name; // Use the new name with correct extension
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -101,8 +114,8 @@ export default function ImageResizerPage() {
 
   return (
     <ToolLayout
-      title="Image Resizer & Compressor"
-      description="Resize and compress your images directly in the browser without uploading them to a server."
+      title="Image Resizer & Converter"
+      description="Resize, compress, and convert images directly in the browser."
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
@@ -123,6 +136,21 @@ export default function ImageResizerPage() {
             <Card>
               <CardContent className="pt-6 space-y-6">
                 <div className="space-y-4">
+                    <div className="space-y-2">
+                         <Label>Target Format</Label>
+                         <Select value={targetFormat} onValueChange={(val: ImageFormat) => setTargetFormat(val)}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select format" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="original">Original ({file.type.split('/')[1]})</SelectItem>
+                                <SelectItem value="image/jpeg">JPEG (.jpg)</SelectItem>
+                                <SelectItem value="image/png">PNG (.png)</SelectItem>
+                                <SelectItem value="image/webp">WebP (.webp)</SelectItem>
+                            </SelectContent>
+                         </Select>
+                    </div>
+
                     <div className="space-y-2">
                         <div className="flex justify-between">
                             <Label>Quality: {Math.round(quality * 100)}%</Label>
@@ -188,8 +216,8 @@ export default function ImageResizerPage() {
                         {compressedFile && (
                              <div className="mt-6 space-y-4">
                                 <div className="flex justify-between text-sm">
-                                    <span>Original Size: {(file.size / 1024).toFixed(2)} KB</span>
-                                    <span className="font-semibold text-primary">Compressed: {(compressedFile.size / 1024).toFixed(2)} KB</span>
+                                    <span>Original: {(file.size / 1024).toFixed(2)} KB</span>
+                                    <span className="font-semibold text-primary">Result: {(compressedFile.size / 1024).toFixed(2)} KB ({compressedFile.type.split('/')[1]})</span>
                                 </div>
                                 <Button onClick={downloadImage} className="w-full" variant="secondary">
                                     <Download className="mr-2 h-4 w-4" />
