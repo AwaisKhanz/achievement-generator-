@@ -49,7 +49,7 @@ export default function Home() {
       const { toPng } = await import("html-to-image")
 
       // Wait a bit for images to be fully rendered/animations to settle if any
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
       const dataUrl = await toPng(cardRef.current, {
         quality: 1.0,
