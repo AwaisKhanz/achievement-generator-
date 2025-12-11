@@ -1,0 +1,24 @@
+
+> achievement-generator@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.2.4
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 1823ms
+ ○ Compiling / ...
+ ✓ Compiled / in 10.8s (1580 modules)
+You're attempting to animate multiple children within AnimatePresence, but its mode is set to "wait". This will lead to odd visual behaviour.
+ GET / 200 in 11746ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.6s (1566 modules)
+ GET /noise.png 404 in 3798ms
+ GET / 200 in 39ms
+ GET /noise.png 404 in 61ms
+You're attempting to animate multiple children within AnimatePresence, but its mode is set to "wait". This will lead to odd visual behaviour.
+ GET / 200 in 268ms
+ GET /noise.png 404 in 86ms
+ ✓ Compiled in 1199ms (1566 modules)
+ ✓ Compiled in 793ms (1566 modules)

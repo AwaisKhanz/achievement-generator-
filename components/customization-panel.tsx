@@ -1,17 +1,17 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import type { AchievementData, Tag } from "@/app/page"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, X, Upload } from "lucide-react"
+import { Plus, X, Upload, ImageIcon, MessageSquare, Tag as TagIcon, Trash2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface CustomizationPanelProps {
   data: AchievementData
@@ -20,7 +20,7 @@ interface CustomizationPanelProps {
 
 export function CustomizationPanel({ data, onChange }: CustomizationPanelProps) {
   const [newTagText, setNewTagText] = useState("")
-  const [newTagColor, setNewTagColor] = useState("#8B5CF6")
+  const [newTagColor, setNewTagColor] = useState("#38bdf8")
 
   const handleImageUpload = (type: "background" | "profile", event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -67,250 +67,223 @@ export function CustomizationPanel({ data, onChange }: CustomizationPanelProps) 
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-3xl font-bold text-foreground">Customize</h2>
-        <p className="text-muted-foreground text-lg">Personalize every aspect of your achievement card</p>
+    <div className="p-6 md:p-8 space-y-8 text-slate-200">
+      <div className="space-y-1">
+        <h2 className="text-2xl font-bold text-white tracking-tight">Customize</h2>
+        <p className="text-slate-400">Design your perfect achievement card</p>
       </div>
 
       <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-card border border-border rounded-lg p-1">
-          <TabsTrigger
-            value="basic"
-            className="text-muted-foreground data-[state=active]:text-primary-foreground data-[state=active]:bg-primary rounded-md transition-all duration-200 font-medium"
-          >
-            Basic
-          </TabsTrigger>
-          <TabsTrigger
-            value="images"
-            className="text-muted-foreground data-[state=active]:text-primary-foreground data-[state=active]:bg-primary rounded-md transition-all duration-200 font-medium"
-          >
-            Images
-          </TabsTrigger>
-          <TabsTrigger
-            value="tags"
-            className="text-muted-foreground data-[state=active]:text-primary-foreground data-[state=active]:bg-primary rounded-md transition-all duration-200 font-medium"
-          >
-            Tags
-          </TabsTrigger>
+        <TabsList className="w-full bg-slate-800/50 p-1 border border-white/5 rounded-xl grid grid-cols-3 gap-1">
+          <TabTrigger value="basic" icon={<MessageSquare className="w-4 h-4" />} label="Messages" />
+          <TabTrigger value="images" icon={<ImageIcon className="w-4 h-4" />} label="Images" />
+          <TabTrigger value="tags" icon={<TagIcon className="w-4 h-4" />} label="Tags" />
         </TabsList>
 
-        <TabsContent value="basic" className="space-y-6 mt-6">
-          <Card className="bg-card border-border shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-card-foreground flex items-center gap-2">
-                Messages
-                <div className="h-1 w-8 bg-primary rounded-full"></div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <Label htmlFor="congrats" className="text-card-foreground font-medium text-sm">
-                  Congratulations Message
-                </Label>
-                <Input
-                  id="congrats"
-                  value={data.congratsMessage}
-                  onChange={(e) => onChange({ ...data, congratsMessage: e.target.value })}
-                  placeholder="Congrats Username!"
-                  className="bg-input border-border text-card-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring transition-all duration-200"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-3 bg-muted/20 rounded-lg">
-                  <Switch
-                    id="show-additional"
-                    checked={data.showAdditionalMessage}
-                    onCheckedChange={(checked) => onChange({ ...data, showAdditionalMessage: checked })}
-                    className="data-[state=checked]:bg-primary"
-                  />
-                  <Label htmlFor="show-additional" className="text-card-foreground font-medium cursor-pointer">
-                    Show Additional Message
-                  </Label>
-                </div>
-
-                {data.showAdditionalMessage && (
-                  <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
-                    <Label className="text-card-foreground font-medium text-sm">Additional Message</Label>
-                    <Textarea
-                      value={data.additionalMessage}
-                      onChange={(e) => onChange({ ...data, additionalMessage: e.target.value })}
-                      placeholder="Add your custom message here..."
-                      rows={4}
-                      className="bg-input border-border text-card-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring transition-all duration-200 resize-none"
-                    />
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="images" className="space-y-6 mt-6">
-          <Card className="bg-card border-border shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-card-foreground flex items-center gap-2">
-                Background Image
-                <div className="h-1 w-8 bg-secondary rounded-full"></div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Label htmlFor="background-upload" className="text-card-foreground font-medium text-sm">
-                  Upload Background
-                </Label>
-                <div className="flex items-center gap-3">
-                  <Input
-                    id="background-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload("background", e)}
-                    className="hidden"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => document.getElementById("background-upload")?.click()}
-                    className="gap-2 bg-input border-border text-card-foreground hover:bg-muted hover:border-primary transition-all duration-200"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Choose File
-                  </Button>
-                  <span className="text-sm text-muted-foreground">PNG, JPG up to 10MB</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-card-foreground flex items-center gap-2">
-                Profile Image
-                <div className="h-1 w-8 bg-secondary rounded-full"></div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Label htmlFor="profile-upload" className="text-card-foreground font-medium text-sm">
-                  Upload Profile Image
-                </Label>
-                <div className="flex items-center gap-3">
-                  <Input
-                    id="profile-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload("profile", e)}
-                    className="hidden"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => document.getElementById("profile-upload")?.click()}
-                    className="gap-2 bg-input border-border text-card-foreground hover:bg-muted hover:border-primary transition-all duration-200"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Choose File
-                  </Button>
-                  <span className="text-sm text-muted-foreground">PNG, JPG up to 10MB</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="tags" className="space-y-6 mt-6">
-          <Card className="bg-card border-border shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-card-foreground flex items-center gap-2">
-                Add New Tag
-                <div className="h-1 w-8 bg-accent rounded-full"></div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-3">
-                <div className="flex-1 space-y-2">
-                  <Label className="text-card-foreground font-medium text-sm">Tag Text</Label>
-                  <Input
-                    value={newTagText}
-                    onChange={(e) => setNewTagText(e.target.value)}
-                    placeholder="Enter tag text"
-                    className="bg-input border-border text-card-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring transition-all duration-200"
-                    onKeyPress={(e) => e.key === "Enter" && addTag()}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-card-foreground font-medium text-sm">Color</Label>
-                  <div className="flex gap-2">
+        <div className="mt-8 relative min-h-[400px]">
+           {/* Removing AnimatePresence wrapper for TabsContent to avoid conflicts with Radix Tabs */}
+             <TabsContent value="basic" className="space-y-6 focus-visible:outline-none">
+                <motion.div
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ duration: 0.3 }}
+                   className="space-y-6"
+                >
+                  <div className="space-y-4">
+                    <Label className="text-slate-300 font-medium">Congratulations Message</Label>
                     <Input
-                      type="color"
-                      value={newTagColor}
-                      onChange={(e) => setNewTagColor(e.target.value)}
-                      className="w-16 h-10 bg-input border-border cursor-pointer"
+                      value={data.congratsMessage}
+                      onChange={(e) => onChange({ ...data, congratsMessage: e.target.value })}
+                      placeholder="e.g. Congrats Monkeyman3000!"
+                      className="bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 focus:ring-primary/50 focus:border-primary/50 transition-all"
                     />
-                    <Button
-                      onClick={addTag}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200 shadow-md hover:shadow-lg"
-                      disabled={!newTagText.trim()}
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-card border-border shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-semibold text-card-foreground flex items-center gap-2">
-                Current Tags
-                <div className="h-1 w-8 bg-accent rounded-full"></div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {data.tags.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No tags added yet. Create your first tag above!</p>
-                </div>
-              ) : (
-                data.tags.map((tag) => (
-                  <div
-                    key={tag.id}
-                    className="flex items-center gap-3 p-4 border border-border rounded-lg bg-muted/10 hover:bg-muted/20 transition-all duration-200"
-                  >
-                    <div className="flex-1 space-y-2">
-                      <Label className="text-card-foreground font-medium text-sm">Tag Text</Label>
-                      <Input
-                        value={tag.text}
-                        onChange={(e) => updateTag(tag.id, { text: e.target.value })}
-                        className="bg-input border-border text-card-foreground focus:ring-2 focus:ring-ring transition-all duration-200"
+                  <div className="bg-slate-800/30 rounded-xl p-5 border border-white/5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="show-additional" className="text-slate-300 font-medium cursor-pointer">
+                        Show Additional Message
+                      </Label>
+                      <Switch
+                        id="show-additional"
+                        checked={data.showAdditionalMessage}
+                        onCheckedChange={(checked) => onChange({ ...data, showAdditionalMessage: checked })}
+                        className="data-[state=checked]:bg-primary"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-card-foreground font-medium text-sm">Color</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          type="color"
-                          value={tag.color}
-                          onChange={(e) => updateTag(tag.id, { color: e.target.value })}
-                          className="w-16 h-10 bg-input border-border cursor-pointer"
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeTag(tag.id)}
-                          className="bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all duration-200"
+
+                    <AnimatePresence>
+                      {data.showAdditionalMessage && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
                         >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
+                          <div className="pt-2">
+                             <Label className="text-slate-300 text-sm mb-2 block">Message Content</Label>
+                             <Textarea
+                                value={data.additionalMessage}
+                                onChange={(e) => onChange({ ...data, additionalMessage: e.target.value })}
+                                placeholder="Write something nice..."
+                                rows={4}
+                                className="bg-slate-900/50 border-white/10 text-white placeholder:text-slate-500 focus:ring-primary/50 focus:border-primary/50 resize-none"
+                             />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                </motion.div>
+             </TabsContent>
+
+             <TabsContent value="images" className="space-y-6 focus-visible:outline-none">
+                 <motion.div
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ duration: 0.3 }}
+                   className="space-y-6"
+                >
+                   <ImageUploadCard
+                      title="Background Image"
+                      color="bg-primary"
+                      id="background-upload"
+                      onUpload={(e) => handleImageUpload("background", e)}
+                   />
+                   <ImageUploadCard
+                      title="Profile Image"
+                      color="bg-purple-500"
+                      id="profile-upload"
+                      onUpload={(e) => handleImageUpload("profile", e)}
+                   />
+                </motion.div>
+             </TabsContent>
+
+             <TabsContent value="tags" className="space-y-6 focus-visible:outline-none">
+                <motion.div
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ duration: 0.3 }}
+                   className="space-y-6"
+                >
+                  <div className="bg-slate-800/30 rounded-xl p-5 border border-white/5 space-y-4">
+                     <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Add New Tag</h3>
+                     <div className="flex gap-3">
+                        <div className="flex-1">
+                           <Input
+                              value={newTagText}
+                              onChange={(e) => setNewTagText(e.target.value)}
+                              placeholder="Tag name"
+                              className="bg-slate-900/50 border-white/10 text-white placeholder:text-slate-500 focus:ring-primary/50 focus:border-primary/50"
+                              onKeyDown={(e) => e.key === "Enter" && addTag()}
+                           />
+                        </div>
+                        <div className="flex items-center gap-2 bg-slate-900/50 border border-white/10 rounded-md px-2">
+                           <input
+                              type="color"
+                              value={newTagColor}
+                              onChange={(e) => setNewTagColor(e.target.value)}
+                              className="w-8 h-8 bg-transparent border-none cursor-pointer"
+                           />
+                        </div>
+                        <Button
+                           onClick={addTag}
+                           disabled={!newTagText.trim()}
+                           className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                        >
+                           <Plus className="w-5 h-5" />
+                        </Button>
+                     </div>
+                  </div>
+
+                  <div className="space-y-3">
+                     <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider px-1">Active Tags</h3>
+                     {data.tags.length === 0 ? (
+                        <div className="text-center py-10 border-2 border-dashed border-white/5 rounded-xl text-slate-500">
+                           No tags yet
+                        </div>
+                     ) : (
+                        <div className="grid gap-3">
+                           {data.tags.map((tag) => (
+                              <motion.div
+                                 layout
+                                 key={tag.id}
+                                 initial={{ opacity: 0, scale: 0.9 }}
+                                 animate={{ opacity: 1, scale: 1 }}
+                                 exit={{ opacity: 0, scale: 0.9 }}
+                                 className="flex items-center gap-3 p-3 bg-slate-800/30 border border-white/5 rounded-xl group hover:border-white/10 transition-all"
+                              >
+                                 <Input
+                                    value={tag.text}
+                                    onChange={(e) => updateTag(tag.id, { text: e.target.value })}
+                                    className="bg-transparent border-transparent text-white focus:bg-slate-900/50 focus:border-white/10"
+                                 />
+                                 <div className="flex items-center gap-2">
+                                    <input
+                                       type="color"
+                                       value={tag.color}
+                                       onChange={(e) => updateTag(tag.id, { color: e.target.value })}
+                                       className="w-8 h-8 bg-transparent border-none cursor-pointer rounded overflow-hidden"
+                                    />
+                                    <Button
+                                       variant="ghost"
+                                       size="icon"
+                                       onClick={() => removeTag(tag.id)}
+                                       className="text-slate-500 hover:text-red-400 hover:bg-red-400/10"
+                                    >
+                                       <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                 </div>
+                              </motion.div>
+                           ))}
+                        </div>
+                     )}
+                  </div>
+                </motion.div>
+             </TabsContent>
+        </div>
       </Tabs>
     </div>
   )
+}
+
+function TabTrigger({ value, icon, label }: { value: string; icon: React.ReactNode; label: string }) {
+   return (
+      <TabsTrigger
+         value={value}
+         className="flex items-center justify-center gap-2 data-[state=active]:bg-slate-700/50 data-[state=active]:text-white text-slate-400 py-2.5 rounded-lg transition-all"
+      >
+         {icon}
+         <span>{label}</span>
+      </TabsTrigger>
+   )
+}
+
+function ImageUploadCard({ title, color, id, onUpload }: { title: string, color: string, id: string, onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
+   return (
+      <div className="bg-slate-800/30 rounded-xl p-5 border border-white/5 group hover:border-white/10 transition-all">
+         <div className="flex items-center gap-3 mb-4">
+            <div className={`w-1 h-6 rounded-full ${color}`} />
+            <h3 className="font-medium text-slate-200">{title}</h3>
+         </div>
+
+         <div className="flex items-center gap-4">
+            <Input
+               id={id}
+               type="file"
+               accept="image/*"
+               onChange={onUpload}
+               className="hidden"
+            />
+            <Button
+               variant="outline"
+               onClick={() => document.getElementById(id)?.click()}
+               className="w-full h-24 border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-primary/5 bg-transparent text-slate-400 flex flex-col gap-2 transition-all"
+            >
+               <Upload className="w-6 h-6" />
+               <span>Click to upload image</span>
+            </Button>
+         </div>
+      </div>
+   )
 }
